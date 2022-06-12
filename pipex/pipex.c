@@ -1,70 +1,127 @@
-# include <unistd.h>
-# include <stdio.h>
-# include <stdlib.h>
-# include <sys/wait.h>
+#include "pipex.h"
 
-int ft_strlen(char *s4)
+char	*my_parsing_filename(int i, int j, char *command, char *envp[])
 {
-    int i;
-
-    i = 0;
-    while (s4[i] != '\0')
-        i++;
-    return (i);
-}
-
-
-char	*ft_strjoin(char *s1, char *s2)
-{
+	char	*new_filename;
 	char	*temp;
-	size_t	i;
 
-	i = 0;
-	if (!s1 || !s2)
-		return (NULL);
-	temp = malloc(sizeof(char) * (ft_strlen(s1) + ft_strlen(s2) + 1));
-	if (temp == NULL)
-		return (NULL);
-	while (*s1)
-	{
-		temp[i] = *s1;
-		s1++;
+	while (envp[i] != NULL && search_PATH(i, envp))
 		i++;
-	}
-	while (*s2)
+	while (envp[i][j] != '\0')
 	{
-		temp[i] = *s2;
-		s2++;
-		i++;
+		if (envp[i][j] != ':')
+			new_filename = ft_strjoin_for_parsing(new_filename, envp[i][j]); 
+		if (envp[i][j] == ':')
+		{
+			new_filename = ft_strjoin(new_filename, "/");
+			temp = ft_strjoin(new_filename, command);
+			if (access(temp, F_OK) == 0)
+			{
+				free(new_filename);
+				return (temp);
+			}
+			free_my_files(new_filename, temp);
+			new_filename = NULL;
+			temp = NULL;
+		}
+		j++;
 	}
-	temp[i] = '\0';
-//   printf("11111111111111111\n");
-//   printf("s1 : %s s2 : %s temp : %s\n", s1, s2, temp);
-	return (temp);
+	free_my_files(new_filename, temp);
+	return (NULL);
 }
 
-int main(int argc, char *argv[], char *envp[])
+char	**check_command(char *argv)
 {
-    char **new_argv;
-    char *new_filename;
-    int i;
-	int childpid;
+	char	**command;
 
-	new_argv = (char **)malloc(sizeof(char *) * (argc + 1));
-	childpid = fork();
-
-    new_filename = "/bin/";
-
-    for(i = 1; i < argc; i++)
-    {
-        new_argv[i-1] = argv[i];
-    }
-    new_filename = ft_strjoin(new_filename, argv[1]);
-    new_argv[i] = NULL;
-	if (childpid == 0)
+	command = ft_split(argv, " ");
+	if (ft_strchr(command[0], "/") == 1)
 	{
-    	execve(new_filename, new_argv, envp);
+		if (access(command[0], F_OK) == 0)
+		{
+			return (command);
+		}
+		free(command);
+		return (NULL);
 	}
-	wait(&childpid);
-	printf("hello\n");
+	else
+		return (command);
+}
+
+void	infile_to_command(ft_pipe *my_pipex, char *argv, char *envp[])
+{
+	int		childpid;
+
+	my_pipex->command = check_command(argv);
+	my_pipex->filename = search_filename(my_pipex->command[0], envp);
+	childpid = fork();
+	if (childpid < 0)
+		fork_error();
+	if (childpid > 0)
+		close(my_pipex->fd[1]);
+	else if (childpid == 0)
+	{
+		dup2(my_pipex->fd[1], 1);
+		close(my_pipex->fd[1]);
+		close(my_pipex->fd[0]);
+		dup2(my_pipex->file_in, 0);
+		if (!my_pipex->filename)
+		{
+			command_error();
+			exit(0);
+		}
+		execve(my_pipex->filename, my_pipex->command, envp);
+	}
+}
+
+void	command_to_outfile(ft_pipe *my_pipex, char *argv, char *envp[])
+{
+	int		childpid;
+
+	my_pipex->command = check_command(argv);
+	my_pipex->filename = search_filename(my_pipex->command[0], envp);
+	if (!my_pipex->filename)
+		command_to_outfile_error();
+	childpid = fork();
+	if (childpid < 0)
+		fork_error();
+	if (childpid > 0)
+		close(my_pipex->fd[0]);
+	else if (childpid == 0)
+	{
+		dup2(my_pipex->fd[0], 0);
+		close(my_pipex->fd[0]);
+		close(my_pipex->fd[1]);
+		dup2(my_pipex->file_out, 1);
+		execve(my_pipex->filename, my_pipex->command, envp);
+	}
+}
+
+int	main(int argc, char *argv[], char *envp[])
+{
+	ft_pipe *my_pipex;
+
+	my_pipex = (ft_pipe*)malloc(sizeof(ft_pipe));
+	if (argc != 5)
+		return (1);
+	if (pipe(my_pipex->fd) == -1)
+		return (1);
+	my_pipex->file_in = open(argv[1], O_RDONLY);
+	if (my_pipex->file_in < 0)
+		infile_error();
+	my_pipex->file_out = open(argv[4], O_TRUNC | O_CREAT | O_RDWR, 0000644);
+	if (my_pipex->file_out < 0)
+		outfile_error();
+	infile_to_command(my_pipex, argv[2], envp);
+	command_to_outfile(my_pipex, argv[3], envp);
+	waitpid(-1, NULL, 0);
+	waitpid(-1, NULL, 0);
+	close(my_pipex->fd[1]);
+	close(my_pipex->fd[0]);
+	free(my_pipex->command);
+	free(my_pipex->filename);
+	free(my_pipex);
+	while(1)
+		sleep(1);
+	return (0);
 }
