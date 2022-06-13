@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   pipex_utils.c                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: hyeo <marvin@42.fr>                        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/06/13 12:58:14 by hyeo              #+#    #+#             */
+/*   Updated: 2022/06/13 12:58:16 by hyeo             ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "pipex.h"
 
 int ft_strlen(char *s4)
@@ -18,7 +30,7 @@ char	*ft_strjoin(char *s1, char *s2)
 	size_t	i;
 
 	i = 0;
-	temp = malloc(sizeof(char) * (ft_strlen(s1) + ft_strlen(s2) + 1));
+	temp = malloc(sizeof(char) * (ft_strlen(s1) + ft_strlen(s2) + 2));
 	if (temp == NULL)
 		return (NULL);
 	while (*s1)
@@ -27,6 +39,8 @@ char	*ft_strjoin(char *s1, char *s2)
 		s1++;
 		i++;
 	}
+	temp[i] = '/';
+	i++;
 	while (*s2)
 	{
 		temp[i] = *s2;

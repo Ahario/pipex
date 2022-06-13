@@ -1,7 +1,20 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: hyeo <marvin@42.fr>                        +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2022/06/13 12:58:39 by hyeo              #+#    #+#              #
+#    Updated: 2022/06/13 14:47:28 by hyeo             ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
 SRCS = pipex.c ft_split.c pipex_utils.c pipex_error.c pipex_utils2.c
 OBJS = ${SRCS:.c=.o}
 CC    = gcc
 CFLAGS	= -Wextra -Wall -Werror
+CFLAGS += -g -fsanitize=address
 NAME	= pipex
 .c.o:		&{CC} &{CFLAGS} -c -o $@ $<
 
