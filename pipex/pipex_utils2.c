@@ -12,17 +12,18 @@
 
 #include "pipex.h"
 
-int search_PATH(int i, char *envp[])
+int	search_PATH(int i, char *envp[])
 {
-	if(envp[i][0] == 'P' && envp[i][1] == 'A' && envp[i][2] == 'T' && envp[i][3] == 'H')
+	if (envp[i][0] == 'P' && envp[i][1] == 'A'
+		&& envp[i][2] == 'T' && envp[i][3] == 'H')
 		return (0);
-	return(1);
+	return (1);
 }
 
-char *search_filename(char *command, char *envp[])
+char	*search_filename(char *command, char *envp[])
 {
-	int			i;
-	int			j;
+	int		i;
+	int		j;
 	char	*filename;
 
 	i = 0;
@@ -33,20 +34,21 @@ char *search_filename(char *command, char *envp[])
 		filename = ft_strdup(command);
 	else
 		filename = my_parsing_filename(i, j, command, envp);
-	return(filename);
+	return (filename);
 }
 
-void free_my_files(char *new_filename, char *temp)
+void	free_my_files(char *new_filename, char *temp)
 {
 	free(new_filename);
 	free(temp);
 }
-void free_my_pipex(t_pipe *my_pipex)
+
+void	free_my_pipex(t_pipe *my_pipex)
 {
 	int	i;
 
 	i = 0;
-	while(my_pipex->command[i] != NULL)
+	while (my_pipex->command[i] != NULL)
 	{
 		free(my_pipex->command[i]);
 		i++;

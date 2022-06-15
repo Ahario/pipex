@@ -26,7 +26,7 @@ char	*my_parsing_filename(int i, int j, char *command, char *envp[])
 			free(new_filename);
 			new_filename = temp;
 		}
-		if (envp[i][j] == ':')
+		if (envp[i][j] == ':' || envp[i][j + 1] == '\0')
 		{
 			temp = ft_strjoin(new_filename, command);
 			free(new_filename);
@@ -38,11 +38,6 @@ char	*my_parsing_filename(int i, int j, char *command, char *envp[])
 		}
 		j++;
 	}
-	temp = ft_strjoin(new_filename, command);
-	free(new_filename);
-	if (access(temp, F_OK) == 0)
-		return (temp);
-	free(temp);
 	return (NULL);
 }
 
@@ -64,12 +59,18 @@ char	**check_command(char *argv)
 		return (command);
 }
 
-void	infile_to_command(t_pipe *my_pipex, char *argv, char *envp[])
+void	infile_to_command(t_pipe *my_pipex, char **argv, char *envp[])
 {
 	int		childpid;
 
-	my_pipex->command = check_command(argv);
+	my_pipex->command = check_command(argv[2]);
 	my_pipex->filename = search_filename(my_pipex->command[0], envp);
+	if (my_pipex->file_in < 0 || !my_pipex->filename)
+	{
+		handle_infile_error(my_pipex->file_in, argv[2]);
+		close(my_pipex->fd[1]);
+		return ;
+	}
 	childpid = fork();
 	if (childpid < 0)
 		fork_error();
@@ -78,30 +79,23 @@ void	infile_to_command(t_pipe *my_pipex, char *argv, char *envp[])
 	else if (childpid == 0)
 	{
 		dup2(my_pipex->fd[1], 1);
-		close(my_pipex->fd[1]);
 		close(my_pipex->fd[0]);
+		close(my_pipex->fd[1]);
 		dup2(my_pipex->file_in, 0);
-		if (!my_pipex->filename)
-		{
-			command_error();
-			exit(0);
-		}
 		execve(my_pipex->filename, my_pipex->command, envp);
 		execve_error();
 	}
 }
 
-void	command_to_outfile(t_pipe *my_pipex, char *argv, char *envp[])
+void	command_to_outfile(t_pipe *my_pipex, char **argv, char *envp[])
 {
 	int		childpid;
 
-	my_pipex->command = check_command(argv);
+	my_pipex->command = check_command(argv[3]);
 	my_pipex->filename = search_filename(my_pipex->command[0], envp);
-	if (!my_pipex->filename)
+	if (!my_pipex->filename || my_pipex->file_out < 0)
 	{
-		free_my_pipex(my_pipex);
-		free(my_pipex);
-		command_to_outfile_error();
+		handle_outfile_error(my_pipex->file_out, argv[3]);
 	}
 	childpid = fork();
 	if (childpid < 0)
@@ -132,19 +126,15 @@ int	main(int argc, char *argv[], char *envp[])
 	if (pipe(my_pipex->fd) == -1)
 		return (1);
 	my_pipex->file_in = open(argv[1], O_RDONLY);
-	if (my_pipex->file_in < 0)
-		infile_error();
-	my_pipex->file_out = open(argv[4], O_TRUNC | O_CREAT | O_RDWR, 0000644);
-	if (my_pipex->file_out < 0)
-		outfile_error();
-	infile_to_command(my_pipex, argv[2], envp);
+	my_pipex->file_out = open(argv[4], O_TRUNC | O_CREAT | O_RDWR, 0644);
+	infile_to_command(my_pipex, argv, envp);
 	free_my_pipex(my_pipex);
-	command_to_outfile(my_pipex, argv[3], envp);
+	command_to_outfile(my_pipex, argv, envp);
 	waitpid(-1, NULL, 0);
 	waitpid(-1, NULL, 0);
 	close(my_pipex->fd[1]);
 	close(my_pipex->fd[0]);
 	free_my_pipex(my_pipex);
 	free(my_pipex);
-	return (0);
+	exit(0);
 }

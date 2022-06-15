@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pipex_error.c                                      :+:      :+:    :+:   */
+/*   pipex_error2.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hyeo <marvin@42.fr>                        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,40 +12,12 @@
 
 #include "pipex.h"
 
-void	handle_infile_error(int file1, char *commands)
+void	execve_error(void)
 {
-	if (file1 < 0)
-		perror("unable to open file");
-	else
-	{
-		write(2, "command not found : ", 20);
-		write(2, commands, ft_strlen(commands));
-		write(2, "\n", 1);
-	}
+	perror("execve error in command_to_outfile ");
 }
 
-void	handle_outfile_error(int file2, char *commands)
+void	file_number_error(void)
 {
-	if (file2 < 0)
-	{
-		perror("unable to open file");
-		exit(1);
-	}
-	else
-	{
-		write(2, "command not found : ", 20);
-		write(2, commands, ft_strlen(commands));
-		write(2, "\n", 1);
-		exit(127);
-	}
-}
-
-void	fork_error(void)
-{
-	perror ("fork error in command_to_outfile : ");
-}
-
-void	pipe_error(void)
-{
-	perror ("pipe error in command_to_outfile : ");
+	perror("you must have 4 inputs");
 }

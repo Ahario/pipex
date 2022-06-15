@@ -12,16 +12,16 @@
 
 #include "pipex.h"
 
-int ft_strlen(char *s4)
+int	ft_strlen(char *s4)
 {
-    int i;
+	int	i;
 
-    i = 0;
+	i = 0;
 	if (!s4)
 		return (0);
-    while (s4[i] != '\0')
-        i++;
-    return (i);
+	while (s4[i] != '\0')
+		i++;
+	return (i);
 }
 
 char	*ft_strjoin(char *s1, char *s2)
@@ -55,25 +55,21 @@ char	*ft_strjoin_for_parsing(char *s1, char s2)
 {
 	char	*temp;
 	size_t	i;
-	int flag;
+	int		flag;
 
 	flag = 0;
-	i = 0;
+	i = -1;
 	if (!s1)
 	{
 		s1 = malloc(sizeof(char) * (1));
 		s1[0] = '\0';
 		flag = 1;
 	}
-	temp = malloc(sizeof(char) * (ft_strlen(s1)  + 2));
+	temp = malloc(sizeof(char) * (ft_strlen(s1) + 2));
 	if (temp == NULL)
 		return (NULL);
-	while (*s1 != '\0')
-	{
-		temp[i] = *s1;
-		s1++;
-		i++;
-	}
+	while (s1[++i] != '\0')
+		temp[i] = s1[i];
 	temp[i] = s2;
 	i++;
 	temp[i] = '\0';
@@ -82,7 +78,7 @@ char	*ft_strjoin_for_parsing(char *s1, char s2)
 	return (temp);
 }
 
-int ft_strchr(char *s, char *c)
+int	ft_strchr(char *s, char *c)
 {
 	char	target;
 	int		i;
@@ -98,7 +94,7 @@ int ft_strchr(char *s, char *c)
 	return (0);
 }
 
-int ft_strlcpy(char *dst, const char *src, size_t dstsize)
+int	ft_strlcpy(char *dst, const char *src, size_t dstsize)
 {
 	size_t	i;
 	size_t	j;

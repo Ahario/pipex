@@ -10,7 +10,7 @@
 #                                                                              #
 # **************************************************************************** #
 
-SRCS = pipex.c ft_split.c pipex_utils.c pipex_error.c pipex_utils2.c
+SRCS = pipex.c ft_split.c pipex_utils.c pipex_error.c pipex_utils2.c pipex_error2.c
 OBJS = ${SRCS:.c=.o}
 CC    = gcc
 CFLAGS	= -Wextra -Wall -Werror
